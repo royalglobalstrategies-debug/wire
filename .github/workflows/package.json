@@ -1,0 +1,13 @@
+{
+  "name": "catholic-wire",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Daily Catholic news dashboard",
+  "scripts": {
+    "start": "node server.js",
+    "fetch": "node generate.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
