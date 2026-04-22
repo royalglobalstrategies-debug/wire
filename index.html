@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Catholic Wire</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1a1208;
+      --parchment: #f5ede0;
+      --gold: #8b6914;
+      --gold-light: #c4a050;
+      --tan: #e8dcc8;
+      --warm-mid: #d4c4a8;
+      --text-body: #3a2e20;
+      --text-muted: #7a6a58;
+      --text-faint: #b0a090;
+      --border: #e0d0bc;
+      --border-dark: #2e2010;
+      --card-bg: #fffdf8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--parchment);
+      color: var(--text-body);
+      font-family: 'EB Garamond', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── Masthead ── */
+    #masthead {
+      background: var(--ink);
+      border-bottom: 3px double var(--gold);
+      padding: 0 24px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    #dateline {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: 9px 0 7px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+
+    #masthead-title-block {
+      padding: 14px 0 8px;
+    }
+
+    #masthead-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: #6a5530;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(30px, 5.5vw, 64px);
+      font-weight: 900;
+      color: var(--parchment);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    #masthead-tagline {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #6a5530;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    #masthead-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0 12px;
+      border-top: 1px solid var(--border-dark);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #filter-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 4px 12px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'EB Garamond', Georgia, serif;
+      background: transparent;
+      color: #a09070;
+      border: 1px solid #3a2a10;
+      border-radius: 1px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { color: var(--parchment); border-color: var(--gold); }
+    .filter-btn.active { background: var(--gold); color: var(--parchment); border-color: var(--gold); }
+
+    #refresh-btn {
+      padding: 5px 16px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: 'EB Garamond', Georgia, serif;
+      background: var(--gold);
+      color: var(--parchment);
+      border: none;
+      border-radius: 1px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    #refresh-btn:disabled { background: #2e2010; opacity: 0.6; cursor: not-allowed; }
+
+    /* ── Progress bar ── */
+    #progress-bar-wrap { height: 2px; background: var(--border); display: none; }
+    #progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 0.3s ease; }
+
+    /* ── Grid ── */
+    #grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Source Card ── */
+    .source-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.4s ease both;
+    }
+
+    .card-header {
+      background: var(--ink);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header svg { opacity: 0.45; flex-shrink: 0; }
+
+    .card-label {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--parchment);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .card-body { padding: 10px 0; flex: 1; }
+
+    .card-loading {
+      padding: 20px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--warm-mid);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .card-loading span {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-message {
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .card-message.error { color: #9c4040; }
+
+    .article-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0e8dc;
+    }
+    .article-item:last-child { border-bottom: none; }
+
+    .article-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+      display: block;
+      margin-bottom: 4px;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .article-title:hover { color: var(--gold); }
+
+    .article-summary {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    .article-date {
+      font-size: 10.5px;
+      color: var(--text-faint);
+      font-style: italic;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 0 0 24px;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f0e4d0; }
+    ::-webkit-scrollbar-thumb { background: var(--warm-mid); border-radius: 3px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header id="masthead">
+  <div id="dateline">Loading latest dispatches…</div>
+  <div id="masthead-title-block">
+    <div id="masthead-eyebrow">✦ &nbsp; Catholic News Digest &nbsp; ✦</div>
+    <h1>THE CATHOLIC WIRE</h1>
+    <div id="masthead-tagline">Fifteen sources · Updated daily · Veritas in Omnibus</div>
+  </div>
+  <div id="masthead-controls">
+    <div id="filter-bar">
+      <button class="filter-btn active" data-filter="all">All Sources</button>
+      <button class="filter-btn" data-filter="news">News Wires</button>
+      <button class="filter-btn" data-filter="commentary">Commentary</button>
+      <button class="filter-btn" data-filter="press">Catholic Press</button>
+      <button class="filter-btn" data-filter="writers">Writers</button>
+    </div>
+    <button id="refresh-btn">↻ Refresh</button>
+  </div>
+</header>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main id="grid"></main>
+
+<footer>✦ &nbsp; Powered by Claude AI web search &nbsp; ✦</footer>
+
+<script>
+const SOURCES = [
+  { id: "ewtnnews",            label: "EWTN News",               domain: "www.ewtnnews.com",                 cat: "news" },
+  { id: "europeanconservative",label: "European Conservative",   domain: "europeanconservative.com",         cat: "commentary" },
+  { id: "ncregister",          label: "National Catholic Register",domain:"www.ncregister.com",              cat: "press" },
+  { id: "realclearreligion",   label: "RealClear Religion",      domain: "www.realclearreligion.org",        cat: "news" },
+  { id: "osvnews",             label: "OSV News",                domain: "www.osvnews.com",                  cat: "news" },
+  { id: "dianemontagna",       label: "Diane Montagna",          domain: "dianemontagna.substack.com",       cat: "writers" },
+  { id: "edwardpentin",        label: "Edward Pentin",           domain: "edwardpentin.substack.com",        cat: "writers" },
+  { id: "firstthings",         label: "First Things",            domain: "firstthings.com",                  cat: "commentary" },
+  { id: "catholicculture",     label: "Catholic Culture",        domain: "www.catholicculture.org",          cat: "commentary" },
+  { id: "aciafrica",           label: "ACI Africa",              domain: "www.aciafrica.org",                cat: "news" },
+  { id: "catholicherald",      label: "Catholic Herald",         domain: "thecatholicherald.com",            cat: "press" },
+  { id: "asianews",            label: "Asia News",               domain: "www.asianews.it/en.html",          cat: "news" },
+  { id: "fides",               label: "Fides News",              domain: "www.fides.org/en",                 cat: "news" },
+  { id: "vaticannews",         label: "Vatican News",            domain: "www.vaticannews.va/en.html",       cat: "news" },
+  { id: "publicdiscourse",     label: "The Public Discourse",    domain: "www.thepublicdiscourse.com",       cat: "commentary" },
+];
+
+const BATCH_SIZE = 3;
+const CACHE_KEY  = "catholicWireCache";
+const CACHE_TTL  = 4 * 60 * 60 * 1000; // 4 hours
+
+let state = {
+  articles: {},
+  loading:  new Set(),
+  errors:   new Set(),
+  filter:   "all",
+  fetching: false,
+  progress: 0,
+  lastUpdated: null,
+};
+
+// ── Cache helpers ─────────────────────────────────────────────────────────────
+function saveCache(articles) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), articles }));
+  } catch {}
+}
+
+function loadCache() {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, articles } = JSON.parse(raw);
+    if (Date.now() - ts < CACHE_TTL) return articles;
+  } catch {}
+  return null;
+}
+
+// ── API call ──────────────────────────────────────────────────────────────────
+async function fetchSource(source) {
+  const prompt = `Search for the 5 most recent news articles published on ${source.domain} (${source.label}).
+Return ONLY a JSON array — no markdown, no preamble:
+[{"title":"...","summary":"One sentence, max 20 words","url":"full URL","date":"e.g. April 14, 2026"}]
+Only real articles from this specific site. Minimum 1, maximum 5.`;
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  const data = await res.json();
+  const text = data.content?.find(b => b.type === "text")?.text || "";
+  const match = text.replace(/```json|```/g, "").trim().match(/\[[\s\S]*\]/);
+  if (match) return JSON.parse(match[0]);
+  return [];
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function crossSVG() {
+  return `<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M1 7h12M7 1v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function renderCard(source) {
+  const articles = state.articles[source.id] || [];
+  const loading  = state.loading.has(source.id);
+  const error    = state.errors.has(source.id);
+
+  let body = "";
+  if (loading) {
+    body = `<div class="card-loading"><div class="spinner"></div><span>Searching…</span></div>`;
+  } else if (error) {
+    body = `<div class="card-message error">Could not load articles</div>`;
+  } else if (!articles.length) {
+    body = `<div class="card-message">No articles found</div>`;
+  } else {
+    body = articles.map(a => `
+      <div class="article-item">
+        <a class="article-title" href="${escHtml(a.url)}" target="_blank" rel="noopener noreferrer">${escHtml(a.title)}</a>
+        ${a.summary ? `<p class="article-summary">${escHtml(a.summary)}</p>` : ""}
+        ${a.date    ? `<span class="article-date">${escHtml(a.date)}</span>` : ""}
+      </div>`).join("");
+  }
+
+  return `
+    <div class="source-card" data-id="${source.id}" data-cat="${source.cat}">
+      <div class="card-header">${crossSVG()}<span class="card-label">${escHtml(source.label)}</span></div>
+      <div class="card-body">${body}</div>
+    </div>`;
+}
+
+function escHtml(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function updateCard(sourceId) {
+  const existing = document.querySelector(`.source-card[data-id="${sourceId}"]`);
+  const source   = SOURCES.find(s => s.id === sourceId);
+  if (!source) return;
+  const html = renderCard(source);
+  if (existing) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    existing.replaceWith(tmp.firstElementChild);
+  }
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  const visible = state.filter === "all"
+    ? SOURCES
+    : SOURCES.filter(s => s.cat === state.filter);
+  grid.innerHTML = visible.map(renderCard).join("");
+}
+
+function updateDateline() {
+  const el = document.getElementById("dateline");
+  if (state.fetching) {
+    const done = SOURCES.length - state.loading.size;
+    el.textContent = `Loading ${done} / ${SOURCES.length} sources…`;
+  } else if (state.lastUpdated) {
+    const d = state.lastUpdated;
+    const ds = d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    const ts = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    el.textContent = `Last updated: ${ds} · ${ts}`;
+  } else {
+    el.textContent = "Fetching latest dispatches…";
+  }
+}
+
+function updateProgress() {
+  const wrap = document.getElementById("progress-bar-wrap");
+  const bar  = document.getElementById("progress-bar");
+  wrap.style.display = state.fetching ? "block" : "none";
+  bar.style.width = state.progress + "%";
+}
+
+function updateRefreshBtn() {
+  const btn = document.getElementById("refresh-btn");
+  const done = SOURCES.length - state.loading.size;
+  btn.disabled    = state.fetching;
+  btn.textContent = state.fetching ? `Loading ${done}/${SOURCES.length}…` : "↻ Refresh";
+}
+
+// ── Fetch all ─────────────────────────────────────────────────────────────────
+async function fetchAll(skipCache = false) {
+  if (state.fetching) return;
+
+  // Try cache first
+  if (!skipCache) {
+    const cached = loadCache();
+    if (cached) {
+      state.articles     = cached;
+      state.lastUpdated  = new Date();
+      state.fetching     = false;
+      renderGrid();
+      updateDateline();
+      updateRefreshBtn();
+      updateProgress();
+      return;
+    }
+  }
+
+  state.fetching    = true;
+  state.progress    = 0;
+  state.articles    = {};
+  state.loading     = new Set(SOURCES.map(s => s.id));
+  state.errors      = new Set();
+  state.lastUpdated = null;
+
+  renderGrid();
+  updateDateline();
+  updateRefreshBtn();
+  updateProgress();
+
+  let done = 0;
+
+  for (let i = 0; i < SOURCES.length; i += BATCH_SIZE) {
+    const batch = SOURCES.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map(async source => {
+      try {
+        const articles = await fetchSource(source);
+        state.articles[source.id] = articles;
+      } catch {
+        state.errors.add(source.id);
+        state.articles[source.id] = [];
+      } finally {
+        state.loading.delete(source.id);
+        done++;
+        state.progress = Math.round((done / SOURCES.length) * 100);
+        updateCard(source.id);
+        updateDateline();
+        updateRefreshBtn();
+        updateProgress();
+      }
+    }));
+  }
+
+  state.lastUpdated = new Date();
+  state.fetching    = false;
+  saveCache(state.articles);
+  updateDateline();
+  updateRefreshBtn();
+  updateProgress();
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────────
+document.getElementById("filter-bar").addEventListener("click", e => {
+  const btn = e.target.closest(".filter-btn");
+  if (!btn) return;
+  state.filter = btn.dataset.filter;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderGrid();
+});
+
+document.getElementById("refresh-btn").addEventListener("click", () => fetchAll(true));
+
+// ── Boot: try pre-built cache first, then live API ───────────────────────────
+async function boot() {
+  try {
+    const res = await fetch("articles-cache.json");
+    if (res.ok) {
+      const { generatedAt, articles } = await res.json();
+      if (articles && Object.keys(articles).length) {
+        state.articles    = articles;
+        state.lastUpdated = new Date(generatedAt);
+        state.fetching    = false;
+        renderGrid();
+        updateDateline();
+        updateRefreshBtn();
+        updateProgress();
+        return;
+      }
+    }
+  } catch {}
+  // Fall back to live fetch if no pre-built cache
+  fetchAll();
+}
+
+boot();
+</script>
+</body>
+</html>
